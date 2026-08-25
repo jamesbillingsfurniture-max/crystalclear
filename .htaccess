@@ -5,6 +5,23 @@
 # Ballina is served by the homepage, so its old area page redirects there.
 Redirect 301 /areas/window-cleaning-ballina.html /
 
+# --- Serve WebP automatically ---
+# If the browser accepts WebP and a matching .webp file exists next to the
+# .jpg/.png, serve the smaller WebP transparently. Otherwise the original
+# image is served unchanged, so nothing breaks on older browsers.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTP_ACCEPT} image/webp
+  RewriteCond %{REQUEST_FILENAME} ^(.+)\.(jpe?g|png)$
+  RewriteCond %1.webp -f
+  RewriteRule ^(.+)\.(jpe?g|png)$ $1.webp [T=image/webp,E=accept:1,L]
+</IfModule>
+<IfModule mod_headers.c>
+  # Caches must vary on Accept when we swapped in a WebP
+  Header append Vary Accept env=accept
+</IfModule>
+AddType image/webp .webp
+
 # --- Caching ---
 <IfModule mod_headers.c>
   # Images, fonts, logo (photos/ and assets/) — cache 1 year, immutable
