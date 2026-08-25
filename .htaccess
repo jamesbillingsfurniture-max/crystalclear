@@ -1,0 +1,24 @@
+# Crystal Clear Windows — Apache / LiteSpeed (cPanel) config
+# Mirrors _headers and _redirects (which only work on Netlify/Cloudflare).
+
+# --- 301 redirects ---
+# Ballina is served by the homepage, so its old area page redirects there.
+Redirect 301 /areas/window-cleaning-ballina.html /
+
+# --- Caching ---
+<IfModule mod_headers.c>
+  # Images, fonts, logo (photos/ and assets/) — cache 1 year, immutable
+  <FilesMatch "\.(jpg|jpeg|png|gif|webp|svg|ico|woff2?|ttf|otf|eot)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+
+  # CSS — cache 1 week
+  <FilesMatch "\.css$">
+    Header set Cache-Control "public, max-age=604800"
+  </FilesMatch>
+
+  # HTML — always revalidate so page edits go live immediately
+  <FilesMatch "\.html$">
+    Header set Cache-Control "public, max-age=0, must-revalidate"
+  </FilesMatch>
+</IfModule>
