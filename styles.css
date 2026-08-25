@@ -1,0 +1,15 @@
+/* ============================================================
+   CRYSTAL CLEAR WINDOWS — Design System entry point
+   styles.css
+   Canonical import for consumers. Link THIS file and you get
+   the full token foundation (color, type, spacing, radius,
+   shadow, motion) plus the brand webfonts.
+
+   The two other stylesheets in this project are context-scoped
+   layout helpers, NOT global tokens, so they are intentionally
+   left out of this import:
+     • preview/base.css        — DS preview-card chrome only
+     • ui_kits/website/areas/_areas.css — area landing-page layout
+   ============================================================ */
+
+@import url('./colors_and_type.css');
