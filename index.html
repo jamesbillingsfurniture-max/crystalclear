@@ -915,12 +915,13 @@ code { font-family: var(--font-mono); font-size: 0.88em; background: var(--frost
           <div class="chips" data-group="hear"><button class="chip" type="button">Word of mouth</button><button class="chip" type="button">Google</button><button class="chip" type="button">Facebook</button><button class="chip" type="button">Saw the van</button><button class="chip" type="button">Repeat customer</button><button class="chip" type="button">Other</button></div>
         </div>
         <button class="btn btn-primary btn-lg btn-block" id="quoteSend">Send via WhatsApp<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></button>
-        <p class="modal-note"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>Opens WhatsApp with your details ready to send. No spam.</p>
+        <button class="btn btn-secondary btn-lg btn-block" id="quoteSendSms" style="margin-top:10px">Not on WhatsApp? Send by text</button>
+        <p class="modal-note"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>Opens WhatsApp or your texts with the details ready to send. No spam.</p>
       </div>
       <div class="modal-success" id="quoteStep2" style="display:none">
         <span class="tick"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></span>
-        <h3>Opening WhatsApp…</h3>
-        <p>Just hit send in WhatsApp and we'll text you a price, usually within the hour. If it didn't open, call <a href="tel:0838750886">083 875 0886</a>.</p>
+        <h3>Almost there…</h3>
+        <p>Just hit send and we'll get back to you with a price, usually within the hour. If nothing opened, call <a href="tel:0838750886">083 875 0886</a>.</p>
         <div style="margin-top:22px"><button class="btn btn-secondary btn-md" id="quoteBack">Back to site</button></div>
       </div>
     </div>
@@ -956,17 +957,36 @@ code { font-family: var(--font-mono); font-size: 0.88em; background: var(--frost
       return sels.map(function(c){return c.textContent.replace(/\s+/g,' ').trim();}).join(', ');
     }
     function val(id){var v=document.getElementById(id).value.trim();return v;}
+    // Enquiry also logs to the round app (Apps Script). Fire-and-forget: if it fails, the message still opens.
+    var APP_URL='https://script.google.com/macros/s/AKfycbziOD1siqOhVm20ExzKZHbCkOlaFEoMb_L2nS5e6YVAupPFKveIrnoJFXGEgvewWS4x/exec';
+    var APP_SECRET='cc-lead-7h2k9';
+    function quoteFields(){ return { secret:APP_SECRET, service:pick('svc'), property:pick('prop'),
+      name:val('qName'), phone:val('qPhone'), address:val('qAddr'), eircode:val('qEir').toUpperCase(),
+      when:pick('when'), heard:pick('hear') }; }
+    function quoteText(f){
+      var lines=["Hi Crystal Clear, I'd like a free quote.","",'Service: '+f.service,'Property: '+f.property];
+      if(f.name)lines.push('Name: '+f.name);
+      if(f.phone)lines.push('Phone: '+f.phone);
+      if(f.address)lines.push('Address: '+f.address);
+      if(f.eircode)lines.push('Eircode: '+f.eircode);
+      if(f.when)lines.push('Timing: '+f.when);
+      if(f.heard)lines.push('Heard via: '+f.heard);
+      return lines.join('\n');
+    }
+    function postLead(f){ try{
+      var body=Object.keys(f).map(function(k){return encodeURIComponent(k)+'='+encodeURIComponent(f[k]);}).join('&');
+      fetch(APP_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body});
+    }catch(e){} }
+    function quoteDone(){ step1.style.display='none';step2.style.display='';title.textContent="You're all set!"; }
     document.getElementById('quoteSend').addEventListener('click',function(){
-      var lines=["Hi Crystal Clear, I'd like a free quote.","",
-        'Service: '+pick('svc'),'Property: '+pick('prop')];
-      if(val('qName'))lines.push('Name: '+val('qName'));
-      if(val('qPhone'))lines.push('Phone: '+val('qPhone'));
-      if(val('qAddr'))lines.push('Address: '+val('qAddr'));
-      if(val('qEir'))lines.push('Eircode: '+val('qEir').toUpperCase());
-      if(pick('when'))lines.push('Timing: '+pick('when'));
-      if(pick('hear'))lines.push('Heard via: '+pick('hear'));
-      window.open('https://wa.me/353838750886?text='+encodeURIComponent(lines.join('\n')),'_blank','noopener');
-      step1.style.display='none';step2.style.display='';title.textContent="You're all set!";
+      var f=quoteFields(); postLead(f);
+      window.open('https://wa.me/353838750886?text='+encodeURIComponent(quoteText(f)),'_blank','noopener');
+      quoteDone();
+    });
+    document.getElementById('quoteSendSms').addEventListener('click',function(){
+      var f=quoteFields(); postLead(f);
+      window.open('sms:0838750886?&body='+encodeURIComponent(quoteText(f)),'_blank');
+      quoteDone();
     });
 
     /* ---- before / after slider ---- */
