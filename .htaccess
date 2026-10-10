@@ -1,5 +1,12 @@
-# Crystal Clear Windows — Apache / LiteSpeed (cPanel) config
+# Crystal Clear Window Cleaning — Apache / LiteSpeed (cPanel) config
 # Mirrors _headers and _redirects (which only work on Netlify/Cloudflare).
+
+# --- Canonical host: force non-www + HTTPS (one indexable version) ---
+RewriteEngine On
+RewriteCond %{HTTP_HOST} ^www\.crystalclearwindowcleaning\.ie$ [NC]
+RewriteRule ^(.*)$ https://crystalclearwindowcleaning.ie/$1 [L,R=301]
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://crystalclearwindowcleaning.ie/$1 [L,R=301]
 
 # --- 301 redirects ---
 # Ballina is served by the homepage, so its old area page redirects there.
